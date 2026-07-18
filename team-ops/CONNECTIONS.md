@@ -2,6 +2,11 @@
 
 Status hub for **team-ops**. Everything points at everything.
 
+> **Tracker of record: GitHub.** Linear was retired 2026-07-18 — issues, PRs, and
+> project tracking now live on GitHub (a cross-repo Project board is the single
+> view once the `project` scope is granted; see [`../HUB.md`](../HUB.md)). The
+> Linear rows below are kept as history, not live surfaces.
+
 ## Triangle
 
 | Surface | Endpoint | Status |
