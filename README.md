@@ -9,7 +9,7 @@
 | **Ops / PM** | `../team-ops/` |
 | **Discord** | [HACKATHON TEAM](https://discord.gg/9FFySeV8B) |
 | **Browser** | CDP `http://127.0.0.1:9230` (reuse tabs, no spam) |
-| **GitHub owner** | TimothyVang (`gh` CLI) |
+| **GitHub** | https://github.com/TimothyVang/clawforge (public) |
 
 ## Judging
 
@@ -28,15 +28,6 @@ clawforge/
   docs/      # design, prompts, JUDGING.md
   scripts/   # project tooling
   JUDGING.md # quick judging card
-```
-
-## Optional: push to GitHub
-
-```bash
-cd ~/Desktop/hackathon/projects/clawforge
-git init -b main
-git add -A && git commit -m "chore: bootstrap clawforge"
-gh repo create TimothyVang/clawforge --private --source=. --remote=origin --push
 ```
 
 ## Related

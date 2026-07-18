@@ -7,7 +7,7 @@
 | Field | Value |
 |-------|--------|
 | Folder | `projects/clawforge/` |
-| GitHub (optional) | `TimothyVang/clawforge` |
+| GitHub | https://github.com/TimothyVang/clawforge |
 | Discord | [HACKATHON TEAM](https://discord.gg/9FFySeV8B) |
 | Sandbox | `~/Desktop/hackathon` · browser CDP **9230** |
 
