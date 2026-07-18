@@ -26,3 +26,6 @@ team-ops/.env.local
 team-ops/.generated/
 team-ops/mcp/discord/node_modules/
 team-ops/node_modules/
+
+# clawforge agent runtime state
+.generated/
