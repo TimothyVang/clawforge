@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import board, discord
+from . import board
 from .config import Config, CONFIG
 from .gh import gh
 from .ledger import Ledger
@@ -57,9 +57,5 @@ def apply(
         except RuntimeError as exc:
             applied.append({**a, "status": f"failed: {str(exc)[:100]}"})
 
-    standup = decision.get("standup", "").strip()
-    discord_status = "skipped (empty)"
-    if standup:
-        discord_status = discord.post(f"**Clawforge standup** — {standup}", config)
-
-    return {"applied": applied, "discord": discord_status}
+    # Discord status/next-tasks posting is owned by the loop (per-channel).
+    return {"applied": applied, "discord": "handled-by-loop"}

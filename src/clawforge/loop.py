@@ -30,6 +30,7 @@ def _reconcile_done(state, ledger, config) -> list[dict]:
                 continue
             b = board.move(board.issue_url(repo, num), "Done", config)
             ledger.record(done_key, b)
+            discord.post_to("done", f"✅ **Done** — {repo}#{num}: {it['title']}", config)
             out.append({"number": num, "repo": repo, "board": b})
     return out
 
@@ -112,12 +113,26 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
         result = act.apply(decision, ledger, config)
         result["dispatched"] = _maybe_dispatch(client, state, decision, ledger, config)
         result["done"] = _reconcile_done(state, ledger, config)
-        # Next-task agent prompts (file + Discord status summary).
+        # Next-task agent prompts (file + Discord).
         ready = tasks.next_tasks(state)
         (config.state_dir / "next-tasks.md").write_text(tasks.render_md(ready, state))
         result["ready"] = len(ready)
-        result["status_post"] = discord.post(
-            tasks.discord_summary(ready, result["done"], result["dispatched"], state), config)
+        # Post each newly-ready task to #next-tasks exactly once.
+        for t in ready:
+            tkey = f"dc-task:{t['repo']}#{t['number']}"
+            if not ledger.has_acted(tkey):
+                discord.post_to(
+                    "next-tasks",
+                    f"📋 **Task ready** — {t['repo']}#{t['number']}\n```\n{t['prompt']}\n```",
+                    config)
+                ledger.record(tkey, "posted")
+        # Status summary to #status only when something happened this cycle.
+        activity = len(result["applied"]) + len(result["dispatched"]) + len(result["done"])
+        result["status_post"] = (
+            discord.post_to("status",
+                            tasks.discord_summary(ready, result["done"], result["dispatched"], state),
+                            config)
+            if activity else "no-activity")
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
         _log(config,
