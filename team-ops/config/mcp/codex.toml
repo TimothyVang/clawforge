@@ -1,0 +1,17 @@
+# Codex / ChatGPT coding agent MCP snippet
+# Replace TEAM_OPS_ROOT with absolute path
+
+[mcp_servers.github]
+command = "bash"
+args = [
+  "-lc",
+  "token=$(gh auth token 2>/dev/null || true); if [ -n \"$token\" ]; then export GITHUB_PERSONAL_ACCESS_TOKEN=\"$token\"; fi; exec npx -y @modelcontextprotocol/server-github",
+]
+
+[mcp_servers.linear]
+command = "npx"
+args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
+
+[mcp_servers.discord]
+command = "node"
+args = ["TEAM_OPS_ROOT/mcp/discord/src/index.js"]

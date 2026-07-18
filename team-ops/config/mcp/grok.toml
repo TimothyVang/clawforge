@@ -1,0 +1,26 @@
+# Paste into ~/.grok/config.toml (or merge sections)
+# Replace TEAM_OPS_ROOT with absolute path to projects/team-ops
+
+[mcp_servers.github]
+command = "bash"
+args = [
+  "-lc",
+  "token=$(gh auth token 2>/dev/null || true); if [ -n \"$token\" ]; then export GITHUB_PERSONAL_ACCESS_TOKEN=\"$token\"; elif [ -n \"$GITHUB_TOKEN\" ]; then export GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\"; fi; exec bunx @modelcontextprotocol/server-github",
+]
+enabled = true
+startup_timeout_sec = 45
+
+[mcp_servers.linear]
+# Official Linear remote MCP — use your client's HTTP/SSE support.
+# If only stdio is supported:
+# command = "npx"
+# args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
+url = "https://mcp.linear.app/mcp"
+enabled = true
+startup_timeout_sec = 45
+
+[mcp_servers.discord]
+command = "node"
+args = ["TEAM_OPS_ROOT/mcp/discord/src/index.js"]
+enabled = true
+startup_timeout_sec = 30

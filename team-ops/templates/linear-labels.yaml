@@ -1,0 +1,16 @@
+# Create these labels in Linear (UI or MCP)
+labels:
+  - name: bug
+    color: "#d73a4a"
+  - name: feature
+    color: "#1d76db"
+  - name: chore
+    color: "#cfd3d7"
+  - name: priority-urgent
+    color: "#b60205"
+  - name: priority-high
+    color: "#d93f0b"
+  - name: priority-medium
+    color: "#fbca04"
+  - name: priority-low
+    color: "#0e8a16"

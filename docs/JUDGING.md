@@ -273,7 +273,7 @@ From the official page (use if helpful to the build):
 |----------|-----|
 | Official hackathon Notion | https://common-scooter-829.notion.site/AITX-Community-x-NVIDIA-Claw-Agent-Hackathon-39d1e636288e803abcf9e24f6c039bcc |
 | Clawforge folder | `~/Desktop/hackathon/projects/clawforge/` |
-| Team ops / Discord mesh | `~/Desktop/hackathon/projects/team-ops/` |
+| Team ops / Discord mesh | `team-ops/` (in this repo) |
 | Discord | https://discord.gg/9FFySeV8B |
 | Questions | team@aitxcommunity.com |
 

@@ -6,7 +6,7 @@
 |--|--|
 | **Name** | Clawforge |
 | **Folder** | `~/Desktop/hackathon/projects/clawforge/` |
-| **Ops / PM** | `../team-ops/` |
+| **Ops / PM** | [`team-ops/`](team-ops/) (in this repo) |
 | **Discord** | [HACKATHON TEAM](https://discord.gg/9FFySeV8B) |
 | **Browser** | CDP `http://127.0.0.1:9230` (reuse tabs, no spam) |
 | **GitHub** | https://github.com/TimothyVang/clawforge (public) |
@@ -32,14 +32,14 @@ clawforge/
 
 ## Related
 
-- Team ops: `projects/team-ops/`
+- Team ops: [`team-ops/`](team-ops/)
 - Hackathon sandbox: `~/Desktop/hackathon`
 
 ## Team mesh sync
 
 ```bash
-../team-ops/scripts/teamsync.sh
+./team-ops/scripts/teamsync.sh
 ```
 
-Prompt for agents: `../team-ops/config/prompts/teamsync.md`
+Prompt for agents: `./team-ops/config/prompts/teamsync.md`
 

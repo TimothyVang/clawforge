@@ -19,3 +19,10 @@ judging/tmp/
 judging/cache/
 judging/home/
 judging/state/
+
+# team-ops local state
+team-ops/.env
+team-ops/.env.local
+team-ops/.generated/
+team-ops/mcp/discord/node_modules/
+team-ops/node_modules/

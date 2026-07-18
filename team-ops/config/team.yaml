@@ -1,0 +1,88 @@
+# Team of 5 — fill after accounts exist
+# Discord invite (humans): https://discord.gg/9FFySeV8B
+
+name: team-ops
+linear_team: ""  # PUGtest team-ops project canceled; team not deleted (see config/linear.env)
+github_owner: "TimothyVang"
+issue_prefix: ""
+linear:
+  status: canceled
+  note: "team-ops Linear project canceled 2026-07-18; PUGtest team still in workspace"
+  workspace: ""
+  team: ""
+  team_id: ""
+  team_key: ""
+  project: ""
+  project_id: ""
+  project_url: ""
+
+members:
+  - seat: 1
+    name: "Timothy Vang"
+    role: lead
+    github: "TimothyVang"
+    linear_email: "timyvang@gmail.com"
+    discord_id: ""
+  - seat: 2
+    name: ""
+    role: eng
+    github: ""
+    linear_email: ""
+    discord_id: ""
+  - seat: 3
+    name: ""
+    role: eng
+    github: ""
+    linear_email: ""
+    discord_id: ""
+  - seat: 4
+    name: ""
+    role: eng_design
+    github: ""
+    linear_email: ""
+    discord_id: ""
+  - seat: 5
+    name: ""
+    role: ops_qa
+    github: ""
+    linear_email: ""
+    discord_id: ""
+
+discord:
+  name: "HACKATHON TEAM"
+  invite: "https://discord.gg/9FFySeV8B"
+  guild_id: "1527816191148818522"
+  open_url: "https://discord.com/channels/1527816191148818522/1527816191588958221"
+  channels:
+    welcome: "1527816191588958218"      # welcome-and-rules
+    notes: "1527816191588958219"        # notes-resources
+    general: "1527816191588958221"      # general
+    help: "1527816191588958222"         # homework-help
+    standup: "1527816191588958223"      # session-planning
+    off_topic: "1527816191588958224"    # off-topic
+    # create later and fill:
+    dev: ""
+    alerts: ""
+    linear: ""
+    agent: ""
+
+# Map app slug → links (filled by connect-project)
+projects: []
+# - slug: demo-app
+#   github: owner/demo-app
+#   linear_project: "Demo App"
+#   discord_channel: ""
+
+# added by connect-project 2026-07-17T23:54:26+00:00
+# - slug: e2e-fixture
+#   github: TimothyVang/e2e-fixture
+#   linear_project: "e2e-fixture"
+#   discord_channel: ""
+
+# product codename (rename when named)
+# - slug: clawforge
+#   path: ../clawforge
+#   github: ""
+#   linear_project: ""
+#   discord_channel: ""
+
