@@ -1,0 +1,8 @@
+# Generated judge evidence (never commit)
+latest/
+runs/
+tmp/
+cache/
+home/
+state/
+*.log

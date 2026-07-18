@@ -1,0 +1,21 @@
+node_modules/
+.venv/
+venv/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+__pycache__/
+.next/
+.turbo/
+coverage/
+
+# Judge harness generated evidence
+judging/latest/
+judging/runs/
+judging/tmp/
+judging/cache/
+judging/home/
+judging/state/
