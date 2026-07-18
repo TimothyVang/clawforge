@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-from . import act, board, decide, dispatch, sense
+from . import act, board, decide, discord, dispatch, sense, tasks
 from .client import ModelClient, ModelError
 from .config import Config, CONFIG
 from .ledger import Ledger
@@ -112,13 +112,19 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
         result = act.apply(decision, ledger, config)
         result["dispatched"] = _maybe_dispatch(client, state, decision, ledger, config)
         result["done"] = _reconcile_done(state, ledger, config)
+        # Next-task agent prompts (file + Discord status summary).
+        ready = tasks.next_tasks(state)
+        (config.state_dir / "next-tasks.md").write_text(tasks.render_md(ready, state))
+        result["ready"] = len(ready)
+        result["status_post"] = discord.post(
+            tasks.discord_summary(ready, result["done"], result["dispatched"], state), config)
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
         _log(config,
              f"cycle {cycle}: untriaged={decision['untriaged']} "
              f"applied={len(result['applied'])} dispatched={len(result['dispatched'])} "
-             f"done={len(result['done'])} latency={decision['latency_s']}s "
-             f"discord={result['discord']}")
+             f"done={len(result['done'])} ready={result['ready']} "
+             f"latency={decision['latency_s']}s discord={result['status_post']}")
         return True
     except ModelError as exc:
         ledger.save()
