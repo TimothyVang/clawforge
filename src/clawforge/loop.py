@@ -10,10 +10,36 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-from . import act, decide, sense
+from . import act, decide, dispatch, sense
 from .client import ModelClient, ModelError
 from .config import Config, CONFIG
 from .ledger import Ledger
+
+
+def _maybe_dispatch(client, state, decision, ledger, config) -> list[dict]:
+    """Dispatch at most one ready work-repo issue per cycle to a coder -> PR.
+
+    Targets any work-repo issue labeled `triage/ready` (whether triaged this cycle
+    or earlier) that hasn't been dispatched yet — guarded by the ledger.
+    """
+    if not config.dispatch_enabled:
+        return []
+    out: list[dict] = []
+    for issue in state.get("work_issues", []):
+        if "triage/ready" not in sense.label_names(issue):
+            continue
+        key = f"dispatch:{state['work_repo']}#{issue['number']}"
+        if ledger.has_acted(key):
+            continue
+        try:
+            r = dispatch.dispatch_issue(client, issue, state["work_repo"], config)
+            ledger.record(key, r["pr"])
+            out.append({"number": issue["number"], "status": "PR", **r})
+        except Exception as exc:  # noqa: BLE001
+            ledger.record(key, f"failed:{str(exc)[:80]}")
+            out.append({"number": issue["number"], "status": f"failed: {str(exc)[:120]}"})
+        break  # one PR per cycle
+    return out
 
 
 def _ts() -> str:
@@ -45,6 +71,11 @@ def _snapshot(config: Config, cycle: int, state, decision, result, error=None) -
         md.append("\n## Applied")
         md += [f"- {x['repo']}#{x['number']}: {x['status']}" for x in result["applied"]]
         md.append(f"- discord: {result['discord']}")
+        for d in result.get("dispatched", []):
+            if d["status"] == "PR":
+                md.append(f"- dispatched #{d['number']} → PR {d['pr']} (`{d['path']}`)")
+            else:
+                md.append(f"- dispatched #{d['number']}: {d['status']}")
     config.snapshot_path.write_text("\n".join(md) + "\n")
 
 
@@ -54,12 +85,13 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
         state = sense.read_state(config)
         decision = decide.decide(client, state)
         result = act.apply(decision, ledger, config)
+        result["dispatched"] = _maybe_dispatch(client, state, decision, ledger, config)
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
         _log(config,
              f"cycle {cycle}: untriaged={decision['untriaged']} "
-             f"applied={len(result['applied'])} latency={decision['latency_s']}s "
-             f"discord={result['discord']}")
+             f"applied={len(result['applied'])} dispatched={len(result['dispatched'])} "
+             f"latency={decision['latency_s']}s discord={result['discord']}")
         return True
     except ModelError as exc:
         ledger.save()

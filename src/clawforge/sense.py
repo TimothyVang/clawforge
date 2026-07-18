@@ -34,8 +34,8 @@ def _prs(repo: str, limit: int = 30) -> list[dict[str, Any]]:
 
 
 def read_state(config: Config = CONFIG) -> dict[str, Any]:
-    repo = f"{config.owner}/{config.repo}"
-    work = f"{config.owner}/{config.work_repo}"
+    repo = config.watched_repo
+    work = config.work_repo_full
     state = {
         "repo": repo,
         "work_repo": work,
