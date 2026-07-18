@@ -1,0 +1,40 @@
+# Containerized vLLM OpenAI-compatible endpoint for the DGX Spark (GB10).
+# All config comes from .env (copy .env.example -> .env). Uses host networking so
+# the endpoint is reachable over Tailscale without per-port publishing.
+services:
+  vllm:
+    image: ${VLLM_IMAGE:?set VLLM_IMAGE in .env — must be arm64/GB10-capable}
+    container_name: clawforge-vllm
+    restart: unless-stopped
+    runtime: nvidia            # NVIDIA container runtime (present on the Spark)
+    ipc: host                  # vLLM needs large shared memory
+    network_mode: host         # bind on the host -> reachable over Tailscale/LAN
+    shm_size: ${SHM_SIZE:-16g}
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_TOKEN:-}
+      - VLLM_LOGGING_LEVEL=${VLLM_LOGGING_LEVEL:-INFO}
+    volumes:
+      - ${MODELS_DIR:-/data/models}:/models:ro   # local model files (optional)
+      - hf-cache:/root/.cache/huggingface        # HF download cache
+    # NOTE: the Spark's `vllm-node` image uses the NVIDIA base entrypoint
+    # (/opt/nvidia/nvidia_entrypoint.sh), so we pass the full `vllm serve ...`
+    # command. (For the official vllm/vllm-openai image, whose entrypoint is
+    # already `vllm serve`, drop the leading "vllm serve" via SERVE_CMD="".)
+    command: >
+      ${SERVE_CMD-vllm serve}
+      ${MODEL:?set MODEL in .env}
+      --served-model-name ${SERVED_NAME:-clawforge-brain}
+      --host 0.0.0.0
+      --port ${PORT:-8001}
+      --gpu-memory-utilization ${GPU_UTIL:-0.30}
+      --max-model-len ${MAX_LEN:-8192}
+      --trust-remote-code
+      ${EXTRA_ARGS:-}
+    healthcheck:
+      test: ["CMD", "bash", "-lc", "curl -sf http://localhost:${PORT:-8001}/v1/models || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 300s       # model load can be slow
+volumes:
+  hf-cache:
