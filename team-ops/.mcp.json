@@ -7,13 +7,12 @@
         "token=$(gh auth token 2>/dev/null || true); if [ -n \"$token\" ]; then export GITHUB_PERSONAL_ACCESS_TOKEN=\"$token\"; elif [ -n \"$GITHUB_TOKEN\" ]; then export GITHUB_PERSONAL_ACCESS_TOKEN=\"$GITHUB_TOKEN\"; fi; exec npx -y @modelcontextprotocol/server-github"
       ]
     },
-    "linear": {
-      "type": "http",
-      "url": "https://mcp.linear.app/mcp"
-    },
     "discord": {
-      "command": "node",
-      "args": ["${/home/assessor/Desktop/hackathon/projects/team-ops}/mcp/discord/src/index.js"],
+      "command": "bash",
+      "args": [
+        "-lc",
+        "d=\"${TEAM_OPS_ROOT:-$PWD}\"; while [ \"$d\" != \"/\" ]; do f=\"$d/mcp/discord/src/index.js\"; if [ -f \"$f\" ]; then exec node \"$f\"; fi; d=\"$(dirname \"$d\")\"; done; echo 'discord mcp: mcp/discord/src/index.js not found (set TEAM_OPS_ROOT or run from within team-ops)' >&2; exit 1"
+      ],
       "env": {
         "DISCORD_BOT_TOKEN": "${DISCORD_BOT_TOKEN}",
         "DISCORD_GUILD_ID": "${DISCORD_GUILD_ID}"
