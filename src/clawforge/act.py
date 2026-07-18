@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from . import discord
+from . import board, discord
 from .config import Config, CONFIG
 from .gh import gh
 from .ledger import Ledger
@@ -45,8 +45,15 @@ def apply(
             continue
         try:
             status = _apply_label(a["repo"], a["number"], a["label"])
+            # Put the triaged issue on the Project board (Todo), once.
+            board_key = f"board-todo:{a['repo']}#{a['number']}"
+            board_status = ""
+            if not ledger.has_acted(board_key):
+                board_status = board.move(
+                    board.issue_url(a["repo"], a["number"]), "Todo", config)
+                ledger.record(board_key, board_status)
             ledger.record(key, a["label"])
-            applied.append({**a, "status": status})
+            applied.append({**a, "status": status, "board": board_status})
         except RuntimeError as exc:
             applied.append({**a, "status": f"failed: {str(exc)[:100]}"})
 
