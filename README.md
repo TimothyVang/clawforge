@@ -10,6 +10,7 @@
 | **Discord** | [HACKATHON TEAM](https://discord.gg/9FFySeV8B) |
 | **Browser** | CDP `http://127.0.0.1:9230` (reuse tabs, no spam) |
 | **GitHub** | https://github.com/TimothyVang/clawforge (public) |
+| **Hub** | [`HUB.md`](HUB.md) — code, PRs, project board, and how to get access |
 
 ## Judging
 
