@@ -86,7 +86,8 @@ if [ -x "$ROOT/scripts/install.sh" ]; then
     src="$ROOT/${pair%%:*}"
     dest="$ROOT/${pair##*:}"
     [ -f "$src" ] || continue
-    sed "s|TEAM_OPS_ROOT|${ROOT}|g; s|\${TEAM_OPS_ROOT}|${ROOT}|g" "$src" >"$dest"
+    # ${TEAM_OPS_ROOT} form first, then bare token (bare-first corrupts ${...}).
+    sed "s|\${TEAM_OPS_ROOT}|${ROOT}|g; s|TEAM_OPS_ROOT|${ROOT}|g" "$src" >"$dest"
   done
   cp "$GEN/claude.mcp.json" "$ROOT/.mcp.json" 2>/dev/null || true
   echo "MCP snippets refreshed under .generated/ and .mcp.json"

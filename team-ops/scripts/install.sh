@@ -45,7 +45,9 @@ export TEAM_OPS_ROOT
 
 render() {
   local src="$1" dest="$2"
-  sed "s|TEAM_OPS_ROOT|${TEAM_OPS_ROOT}|g; s|\${TEAM_OPS_ROOT}|${TEAM_OPS_ROOT}|g" "$src" >"$dest"
+  # Replace the ${TEAM_OPS_ROOT} form FIRST, then any bare TEAM_OPS_ROOT token.
+  # (Bare-first would corrupt ${TEAM_OPS_ROOT} into ${<abspath>}.)
+  sed "s|\${TEAM_OPS_ROOT}|${TEAM_OPS_ROOT}|g; s|TEAM_OPS_ROOT|${TEAM_OPS_ROOT}|g" "$src" >"$dest"
   echo "    wrote $dest"
 }
 

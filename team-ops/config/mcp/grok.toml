@@ -10,15 +10,6 @@ args = [
 enabled = true
 startup_timeout_sec = 45
 
-[mcp_servers.linear]
-# Official Linear remote MCP — use your client's HTTP/SSE support.
-# If only stdio is supported:
-# command = "npx"
-# args = ["-y", "mcp-remote", "https://mcp.linear.app/mcp"]
-url = "https://mcp.linear.app/mcp"
-enabled = true
-startup_timeout_sec = 45
-
 [mcp_servers.discord]
 command = "node"
 args = ["TEAM_OPS_ROOT/mcp/discord/src/index.js"]
