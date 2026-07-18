@@ -16,18 +16,25 @@ no OAuth app to manage.
 
 ## Project board (all PRs + issues, one view)
 
-<!-- BOARD_URL: paste the GitHub Project (v2) URL here once created -->
-**Board:** _not created yet_ — needs the `project` scope on the `gh` token:
+**Board:** <https://github.com/users/TimothyVang/projects/1> (public) — the single
+place PRs and issues are tracked. Linked repo: `clawforge`.
+
+**Track another repo:** link it, then it can feed the board:
 
 ```bash
-gh auth refresh -s project -s read:project        # one-time, interactive
-gh project create --owner TimothyVang --title "Clawforge"
-# then enable the board's built-in "Auto-add" workflow per repo so every new
-# issue/PR lands here automatically (Project → ⋯ → Workflows → Auto-add).
+gh project link 1 --owner TimothyVang --repo <repo>
 ```
 
-Until then, PRs and issues are tracked per-repo natively:
-- clawforge: <https://github.com/TimothyVang/clawforge/pulls> · [issues](https://github.com/TimothyVang/clawforge/issues)
+**Auto-add future issues/PRs (one-time UI toggle):** open the board →
+**⋯ → Workflows → "Auto-add to project"** → enable and pick the linked repo(s).
+This is the only step the API can't do headlessly; after it's on, every new
+issue/PR lands on the board automatically.
+
+**Add an existing issue/PR by hand:**
+
+```bash
+gh project item-add 1 --owner TimothyVang --url <issue-or-pr-url>
+```
 
 ## How to contribute (public fork/PR flow)
 
