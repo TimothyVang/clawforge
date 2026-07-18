@@ -48,6 +48,20 @@ Do not put long-lived tokens in git. Prefer `gh auth token` via `auth_github_fro
   - `../../../scripts/open-sites.sh https://discord.com/app` from hackathon root
   - or agent-browser `--cdp http://127.0.0.1:9230 --session hackathon`
 
+## Keep the tracker current (update when a task is done)
+
+As the **last step of any task — before marking it complete —** update tracking so
+status never drifts. Board index: [`../HUB.md`](../HUB.md).
+
+1. **GitHub (tracker of record):**
+   - Reference the issue from the PR/commit (`Closes #<n>`) and close or re-label it.
+   - Move its card to **Done** on the Clawforge Project board.
+2. **Linear (mirror):** reflect the same status via the Linear MCP.
+   > NOTE (2026-07-18): Linear MCP is **not wired** (removed) and the Linear project
+   > was **canceled** — see [`CONNECTIONS.md`](CONNECTIONS.md). Skip this step until
+   > Linear is re-wired. (The "Linear (live)" and `TEAM-n`/`PUG-n` sections below are
+   > historical and no longer active.)
+
 ## Before acting
 
 1. Read `config/team.yaml` for members and channel IDs
