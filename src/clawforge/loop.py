@@ -10,7 +10,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-from . import act, decide, dispatch, sense
+from . import act, board, decide, dispatch, sense
 from .client import ModelClient, ModelError
 from .config import Config, CONFIG
 from .ledger import Ledger
@@ -34,7 +34,10 @@ def _maybe_dispatch(client, state, decision, ledger, config) -> list[dict]:
         try:
             r = dispatch.dispatch_issue(client, issue, state["work_repo"], config)
             ledger.record(key, r["pr"])
-            out.append({"number": issue["number"], "status": "PR", **r})
+            # PR opened -> advance the board card to In Progress.
+            b = board.move(board.issue_url(state["work_repo"], issue["number"]),
+                           "In Progress", config)
+            out.append({"number": issue["number"], "status": "PR", "board": b, **r})
         except Exception as exc:  # noqa: BLE001
             ledger.record(key, f"failed:{str(exc)[:80]}")
             out.append({"number": issue["number"], "status": f"failed: {str(exc)[:120]}"})
@@ -69,7 +72,11 @@ def _snapshot(config: Config, cycle: int, state, decision, result, error=None) -
         md += ["\n## Model reasoning trace", "```", decision["reasoning"][:1500], "```"]
     if result:
         md.append("\n## Applied")
-        md += [f"- {x['repo']}#{x['number']}: {x['status']}" for x in result["applied"]]
+        md += [
+            f"- {x['repo']}#{x['number']}: {x['status']}"
+            + (f" · board {x['board']}" if x.get("board") else "")
+            for x in result["applied"]
+        ]
         md.append(f"- discord: {result['discord']}")
         for d in result.get("dispatched", []):
             if d["status"] == "PR":
