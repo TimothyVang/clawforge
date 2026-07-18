@@ -16,6 +16,24 @@ from .config import Config, CONFIG
 from .ledger import Ledger
 
 
+def _reconcile_done(state, ledger, config) -> list[dict]:
+    """Closed issues that clawforge previously put on the board -> Done column."""
+    out: list[dict] = []
+    for key, repo in (("closed_issues", state["repo"]),
+                      ("closed_work_issues", state["work_repo"])):
+        for it in state.get(key, []):
+            num = it["number"]
+            if not ledger.has_acted(f"board-todo:{repo}#{num}"):
+                continue  # only issues we tracked
+            done_key = f"board-done:{repo}#{num}"
+            if ledger.has_acted(done_key):
+                continue
+            b = board.move(board.issue_url(repo, num), "Done", config)
+            ledger.record(done_key, b)
+            out.append({"number": num, "repo": repo, "board": b})
+    return out
+
+
 def _maybe_dispatch(client, state, decision, ledger, config) -> list[dict]:
     """Dispatch at most one ready work-repo issue per cycle to a coder -> PR.
 
@@ -93,12 +111,14 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
         decision = decide.decide(client, state)
         result = act.apply(decision, ledger, config)
         result["dispatched"] = _maybe_dispatch(client, state, decision, ledger, config)
+        result["done"] = _reconcile_done(state, ledger, config)
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
         _log(config,
              f"cycle {cycle}: untriaged={decision['untriaged']} "
              f"applied={len(result['applied'])} dispatched={len(result['dispatched'])} "
-             f"latency={decision['latency_s']}s discord={result['discord']}")
+             f"done={len(result['done'])} latency={decision['latency_s']}s "
+             f"discord={result['discord']}")
         return True
     except ModelError as exc:
         ledger.save()

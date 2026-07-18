@@ -11,10 +11,10 @@ from .config import Config, CONFIG
 from .gh import gh
 
 
-def _issues(repo: str, limit: int = 30) -> list[dict[str, Any]]:
+def _issues(repo: str, limit: int = 30, state: str = "open") -> list[dict[str, Any]]:
     try:
         return gh(
-            "issue", "list", "--repo", repo, "--state", "open",
+            "issue", "list", "--repo", repo, "--state", state,
             "--json", "number,title,labels,body,url", "--limit", str(limit),
             json_out=True,
         ) or []
@@ -41,6 +41,8 @@ def read_state(config: Config = CONFIG) -> dict[str, Any]:
         "work_repo": work,
         "issues": _issues(repo),
         "work_issues": _issues(work),
+        "closed_issues": _issues(repo, limit=20, state="closed"),
+        "closed_work_issues": _issues(work, limit=20, state="closed"),
         "prs": _prs(repo),
     }
     state["counts"] = {
