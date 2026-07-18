@@ -1,6 +1,16 @@
 # Clawforge
 
-**NVIDIA Claw Agent Hackathon** project — forge agents, wire tools, ship with the crew.
+**An autonomous AI project-manager agent (a "Claw Agent").** It runs on a
+heartbeat: every cycle, with no human prompt, it senses GitHub issues/PRs, reasons
+with a self-hosted LLM (**vLLM on an NVIDIA DGX Spark GB10**), and acts — triaging
+issues, writing standups, and dispatching a coding step that **opens real PRs**.
+State persists across restarts; model failures recover instead of crashing.
+
+- **The agent:** [`src/`](src/) (Python) — `python -m clawforge`
+- **The brain:** [`vllm-test/`](vllm-test/) — containerized vLLM endpoint on the Spark
+- **Submission + demo runbook:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
+
+*NVIDIA Claw Agent Hackathon — Recursive Intelligence track.*
 
 | | |
 |--|--|
