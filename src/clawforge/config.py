@@ -50,6 +50,17 @@ class Config:
             os.environ.get("CLAWFORGE_STATE_DIR", str(_root() / ".generated" / "clawforge"))
         )
 
+    def _full(self, name: str) -> str:
+        return name if "/" in name else f"{self.owner}/{name}"
+
+    @property
+    def watched_repo(self) -> str:
+        return self._full(self.repo)
+
+    @property
+    def work_repo_full(self) -> str:
+        return self._full(self.work_repo)
+
     def ensure_dirs(self) -> None:
         self.state_dir.mkdir(parents=True, exist_ok=True)
 
