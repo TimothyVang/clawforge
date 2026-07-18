@@ -15,6 +15,22 @@ def _root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _load_dotenv() -> None:
+    """Load src/.env into the environment (without overriding real env vars)."""
+    env_path = Path(__file__).resolve().parents[1] / ".env"  # src/.env
+    if not env_path.exists():
+        return
+    for line in env_path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        os.environ.setdefault(key.strip(), val.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
+
+
 def _flag(name: str, default: str = "0") -> bool:
     return os.environ.get(name, default) == "1"
 

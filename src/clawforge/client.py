@@ -41,6 +41,8 @@ class ModelClient:
         self._headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {config.api_key or 'EMPTY'}",
+            # Harmless for other servers; skips ngrok's browser-warning interstitial.
+            "ngrok-skip-browser-warning": "true",
         }
 
     def chat(
