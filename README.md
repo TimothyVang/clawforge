@@ -34,3 +34,12 @@ clawforge/
 
 - Team ops: `projects/team-ops/`
 - Hackathon sandbox: `~/Desktop/hackathon`
+
+## Team mesh sync
+
+```bash
+../team-ops/scripts/teamsync.sh
+```
+
+Prompt for agents: `../team-ops/config/prompts/teamsync.md`
+
