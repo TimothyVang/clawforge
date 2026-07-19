@@ -53,9 +53,38 @@ cat .generated/clawforge/ledger.json          # persisted state (survives restar
 | `CLAWFORGE_MODEL` | `clawforge-brain` | served model name |
 | `CLAWFORGE_REPO` | `clawforge` | watched repo (owner from `CLAWFORGE_OWNER`) |
 | `CLAWFORGE_WORK_REPO` | `tickytalky` | dispatch target repo |
-| `CLAWFORGE_INTERVAL` | `60` | seconds between cycles |
+| `CLAWFORGE_INTERVAL` | `60` | seconds between cycles (see [Heartbeat interval](#heartbeat-interval)) |
 | `CLAWFORGE_DRY_RUN` | `0` | `1` = reason only, no writes |
 | `DISCORD_BOT_TOKEN` / `CLAWFORGE_DISCORD_CHANNEL` | unset | optional standup post |
+
+## Heartbeat interval
+Clawforge is **heartbeat-driven**: it wakes on a fixed interval and runs one
+sense -> decide -> act cycle each time, rather than waiting for a prompt. That
+interval is the beat of the agent, controlled by `CLAWFORGE_INTERVAL`.
+
+- **Default:** `60` seconds between the end of one cycle and the start of the next.
+- **Set it via env:** `export CLAWFORGE_INTERVAL=120` (cycles every 2 minutes).
+- **Set it via CLI:** `python3 -m clawforge --interval 120`. The flag simply
+  exports `CLAWFORGE_INTERVAL` before config is read, so the CLI value wins over
+  a value already in the environment or `.env`.
+- **Units:** whole seconds (integer). Smaller = more responsive but more model
+  calls and GitHub API traffic; larger = cheaper and calmer.
+
+```bash
+# Heartbeat every 30s (live, applies triage labels)
+PYTHONPATH=. python3 -m clawforge --interval 30
+```
+
+The interval only governs the **gap between cycles** in a continuous run. To run a
+single cycle and exit immediately (ignoring the interval entirely — useful for
+cron, CI, or the demo), pass `--once`:
+
+```bash
+PYTHONPATH=. python3 -m clawforge --once          # one cycle, no sleep
+```
+
+You can also cap a continuous run to a fixed number of cycles with
+`CLAWFORGE_MAX_CYCLES` (`0` = run forever, the default).
 
 ## Known limitations
 - Triage quality tracks model size; the small dev model (Qwen2.5-1.5B) occasionally
