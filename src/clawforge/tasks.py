@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .sense import label_names
+from .sense import label_names, watched_open_groups
 
 
 def agent_prompt(issue: dict[str, Any], repo: str) -> str:
@@ -24,8 +24,8 @@ def agent_prompt(issue: dict[str, Any], repo: str) -> str:
 def next_tasks(state: dict[str, Any]) -> list[dict[str, Any]]:
     """Ready issues across watched + work repos, as agent-ready prompts."""
     out: list[dict[str, Any]] = []
-    for key, repo in (("issues", state["repo"]), ("work_issues", state["work_repo"])):
-        for it in state.get(key, []):
+    for repo, issues in watched_open_groups(state):
+        for it in issues:
             if "triage/ready" in label_names(it):
                 out.append({
                     "repo": repo, "number": it["number"], "title": it["title"],

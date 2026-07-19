@@ -12,7 +12,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-from . import act, board, decide, discord, dispatch, sense, tasks
+from . import act, board, briefing, decide, discord, dispatch, sense, tasks, todos
 from .client import ModelClient, ModelError
 from .config import Config, CONFIG
 from .ledger import Ledger
@@ -21,9 +21,8 @@ from .ledger import Ledger
 def _reconcile_done(state, ledger, config) -> list[dict]:
     """Closed issues that clawforge previously put on the board -> Done column."""
     out: list[dict] = []
-    for key, repo in (("closed_issues", state["repo"]),
-                      ("closed_work_issues", state["work_repo"])):
-        for it in state.get(key, []):
+    for repo, closed in sense.watched_closed_groups(state):
+        for it in closed:
             num = it["number"]
             if not ledger.has_acted(f"board-todo:{repo}#{num}"):
                 continue  # only issues we tracked
@@ -120,7 +119,8 @@ def _snapshot(config: Config, cycle: int, state, decision, result, error=None) -
         md.append(f"**FAILURE (recovering next cycle):** {error}\n")
     if state:
         c = state["counts"]
-        md.append(f"- watched **{state['repo']}** | work **{state['work_repo']}**")
+        watched = ", ".join(w["repo"] for w in state.get("watched", [{"repo": state["repo"]}]))
+        md.append(f"- watched **{watched}** | work **{state['work_repo']}**")
         md.append(f"- open issues: {c['issues']} | work issues: {c['work_issues']} | PRs: {c['prs']}")
     md.append("\n## Standup\n" + (decision.get("standup", "") if decision else "_(none)_"))
     md.append("\n## Decisions")
@@ -165,13 +165,20 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
                     f"📋 **Task ready** — {t['repo']}#{t['number']}\n```\n{t['prompt']}\n```",
                     config)
                 ledger.record(tkey, "posted")
-        # Status summary to #status only when something happened this cycle.
+        # PM briefing to #status: on activity, or a periodic heartbeat (~30 min)
+        # so the board stays visible even on a quiet cycle. Built only when posting
+        # (each build is a couple of gh calls) to keep idle cycles cheap.
         activity = len(result["applied"]) + len(result["dispatched"]) + len(result["done"])
-        result["status_post"] = (
-            discord.post_to("status",
-                            tasks.discord_summary(ready, result["done"], result["dispatched"], state),
-                            config)
-            if activity else "no-activity")
+        if activity or cycle % 30 == 0:
+            tracked = {w["repo"] for w in state.get("watched", [])} | {state["work_repo"]}
+            board_items = board.list_items(config, repos=tracked)
+            milestones = sense.read_milestones(sorted(tracked))
+            todo_map = todos.generate_for_projects(client, state)
+            brief = briefing.pm_briefing(state, result, board_items, milestones, todo_map)
+            (config.state_dir / "board-status.md").write_text(brief)
+            result["status_post"] = discord.post_to("status", brief, config)
+        else:
+            result["status_post"] = "no-activity"
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
         _write_json_snapshot(config, _cycle_record(cycle, state, decision, result))

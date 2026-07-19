@@ -34,24 +34,62 @@ def _prs(repo: str, limit: int = 30) -> list[dict[str, Any]]:
 
 
 def read_state(config: Config = CONFIG) -> dict[str, Any]:
-    repo = config.watched_repo
+    watched_full = config.watched_repos_full  # primary + extra tracked projects
     work = config.work_repo_full
+    # Sense every watched repo's open + recently-closed issues.
+    watched = [
+        {"repo": r, "open": _issues(r), "closed": _issues(r, limit=20, state="closed")}
+        for r in watched_full
+    ]
+    primary = watched[0]
     state = {
-        "repo": repo,
+        "repo": watched_full[0],
         "work_repo": work,
-        "issues": _issues(repo),
+        "watched": watched,
+        # Backward-compat aliases pointing at the primary watched repo.
+        "issues": primary["open"],
+        "closed_issues": primary["closed"],
         "work_issues": _issues(work),
-        "closed_issues": _issues(repo, limit=20, state="closed"),
         "closed_work_issues": _issues(work, limit=20, state="closed"),
-        "prs": _prs(repo),
+        "prs": _prs(watched_full[0]),
     }
     state["counts"] = {
-        "issues": len(state["issues"]),
+        "issues": sum(len(w["open"]) for w in watched),  # total across watched repos
         "work_issues": len(state["work_issues"]),
         "prs": len(state["prs"]),
     }
     return state
 
 
+def watched_open_groups(state: dict[str, Any]) -> list[tuple[str, list[dict[str, Any]]]]:
+    """(repo, open_issues) for every watched repo plus the work repo."""
+    groups = [(w["repo"], w["open"]) for w in state.get("watched", [])]
+    groups.append((state["work_repo"], state.get("work_issues", [])))
+    return groups
+
+
+def watched_closed_groups(state: dict[str, Any]) -> list[tuple[str, list[dict[str, Any]]]]:
+    """(repo, closed_issues) for every watched repo plus the work repo."""
+    groups = [(w["repo"], w["closed"]) for w in state.get("watched", [])]
+    groups.append((state["work_repo"], state.get("closed_work_issues", [])))
+    return groups
+
+
 def label_names(issue: dict[str, Any]) -> list[str]:
     return [lbl.get("name", "") for lbl in issue.get("labels", [])]
+
+
+def read_milestones(repos: list[str]) -> list[dict[str, Any]]:
+    """Open GitHub milestones across repos: [{repo, title, open, closed}]."""
+    out: list[dict[str, Any]] = []
+    for r in repos:
+        try:
+            ms = gh("api", f"repos/{r}/milestones?state=open", json_out=True) or []
+        except RuntimeError:
+            continue
+        for m in ms:
+            out.append({
+                "repo": r, "title": m.get("title", ""),
+                "open": m.get("open_issues", 0), "closed": m.get("closed_issues", 0),
+            })
+    return out

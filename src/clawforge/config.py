@@ -52,6 +52,10 @@ class Config:
         self.owner = os.environ.get("CLAWFORGE_OWNER", "TimothyVang")
         self.repo = os.environ.get("CLAWFORGE_REPO", "clawforge")          # PM watches
         self.work_repo = os.environ.get("CLAWFORGE_WORK_REPO", "tickytalky")  # dispatch target
+        # Extra projects to track (triage + board + Discord), comma-separated.
+        self.track_repos = [
+            r.strip() for r in os.environ.get("CLAWFORGE_TRACK_REPOS", "").split(",") if r.strip()
+        ]
         self.project_number = int(os.environ.get("CLAWFORGE_PROJECT", "1"))
 
         # --- heartbeat ---
@@ -82,6 +86,11 @@ class Config:
     @property
     def watched_repo(self) -> str:
         return self._full(self.repo)
+
+    @property
+    def watched_repos_full(self) -> list[str]:
+        """Primary watched repo first, then any extra tracked projects."""
+        return [self.watched_repo] + [self._full(r) for r in self.track_repos]
 
     @property
     def work_repo_full(self) -> str:
