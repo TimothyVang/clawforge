@@ -2,12 +2,18 @@
 
 **An autonomous AI project-manager agent (a "Claw Agent").** It runs on a
 heartbeat: every cycle, with no human prompt, it senses GitHub issues/PRs, reasons
-with a self-hosted LLM (**vLLM on an NVIDIA DGX Spark GB10**), and acts — triaging
-issues, writing standups, and dispatching a coding step that **opens real PRs**.
+with a self-hosted LLM on an **NVIDIA DGX Spark GB10** (today: NVIDIA
+Nemotron-3-Nano-4B served via Ollama on the Spark; vLLM validated on the GB10 and
+drop-in via one env var), and acts — triaging issues, writing standups, and
+dispatching a coding step that **opens real PRs**.
 State persists across restarts; model failures recover instead of crashing.
 
 - **The agent:** [`src/`](src/) (Python) — `python -m clawforge`
-- **The brain:** [`vllm-test/`](vllm-test/) — containerized vLLM endpoint on the Spark
+- **The live brain:** NVIDIA Nemotron-3-Nano-4B (Q4_K_M) on the Spark's Ollama,
+  reached over an ssh tunnel (`clawforge-ollama.service`, `127.0.0.1:11434`)
+- **vLLM validation:** [`vllm-test/`](vllm-test/) — vLLM 0.14 brought up on the
+  GB10 (~57 tok/s); a separate validation artifact, swappable in as the brain via
+  `CLAWFORGE_MODEL_BASE_URL`
 - **Submission + demo runbook:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 
 *NVIDIA Claw Agent Hackathon — Recursive Intelligence track.*

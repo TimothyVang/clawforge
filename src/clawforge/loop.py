@@ -94,6 +94,8 @@ def _cycle_record(cycle: int, state, decision, result, error=None) -> dict[str, 
         rec["untriaged"] = decision.get("untriaged")
         rec["latency_s"] = decision.get("latency_s")
         rec["actions"] = decision.get("actions", [])
+        # Keep the model's decision trace in the durable record (audit trail).
+        rec["reasoning"] = (decision.get("reasoning") or "")[:2000]
     if result:
         rec["applied"] = result.get("applied", [])
         rec["dispatched"] = result.get("dispatched", [])
@@ -104,13 +106,20 @@ def _cycle_record(cycle: int, state, decision, result, error=None) -> dict[str, 
 
 
 def _write_json_snapshot(config: Config, record: dict[str, Any]) -> None:
-    """Persist the structured cycle record; echo to stdout in --json mode."""
+    """Persist the structured cycle record; echo to stdout in --json mode.
+
+    latest-cycle.json is overwritten each cycle (the "current" view);
+    cycle-history.jsonl is append-only so decisions and reasoning traces survive
+    later cycles — the durable audit trail.
+    """
     config.ensure_dirs()
-    payload = json.dumps(record, indent=2, sort_keys=True)
-    config.json_snapshot_path.write_text(payload + "\n")
+    line = json.dumps(record, sort_keys=True)
+    config.json_snapshot_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+    with open(config.history_path, "a") as f:
+        f.write(line + "\n")
     if config.json_output:
         # One JSON object per cycle on stdout (JSON Lines when run continuously).
-        print(json.dumps(record, sort_keys=True), flush=True)
+        print(line, flush=True)
 
 
 def _snapshot(config: Config, cycle: int, state, decision, result, error=None) -> None:
