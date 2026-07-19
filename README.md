@@ -2,18 +2,20 @@
 
 **An autonomous AI project-manager agent (a "Claw Agent").** It runs on a
 heartbeat: every cycle, with no human prompt, it senses GitHub issues/PRs, reasons
-with a self-hosted LLM on an **NVIDIA DGX Spark GB10** (today: NVIDIA
-Nemotron-3-Nano-4B served via Ollama on the Spark; vLLM validated on the GB10 and
-drop-in via one env var), and acts — triaging issues, writing standups, and
+with a self-hosted LLM on an **NVIDIA DGX Spark GB10** — live brain:
+**DeepSeek-V4-Flash (159B MoE) served by vLLM 0.24** behind a keyed endpoint
+(evidence: the endpoint's `system_fingerprint: vllm-0.24.0`; unauthenticated
+requests get 401) — and acts — triaging issues, writing standups, and
 dispatching a coding step that **opens real PRs**.
 State persists across restarts; model failures recover instead of crashing.
 
 - **The agent:** [`src/`](src/) (Python) — `python -m clawforge`
-- **The live brain:** NVIDIA Nemotron-3-Nano-4B (Q4_K_M) on the Spark's Ollama,
-  reached over an ssh tunnel (`clawforge-ollama.service`, `127.0.0.1:11434`)
-- **vLLM validation:** [`vllm-test/`](vllm-test/) — vLLM 0.14 brought up on the
-  GB10 (~57 tok/s); a separate validation artifact, swappable in as the brain via
-  `CLAWFORGE_MODEL_BASE_URL`
+- **The live brain:** DeepSeek-V4-Flash served by **vLLM 0.24** on the Spark,
+  via a keyed public endpoint (`src/.env`). Earlier in the event the same agent
+  ran on Nemotron-3-Nano-4B via Ollama — swapping brains was exactly one env
+  change, live, mid-run (the swappable-seam design proven in production)
+- **vLLM validation:** [`vllm-test/`](vllm-test/) — first bring-up of vLLM on
+  the GB10 (~57 tok/s)
 - **Submission + demo runbook:** [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 
 *NVIDIA Claw Agent Hackathon — Recursive Intelligence track.*
