@@ -18,7 +18,21 @@ def main() -> None:
     p.add_argument("--once", action="store_true", help="run a single cycle and exit")
     p.add_argument("--interval", type=int, help="seconds between cycles")
     p.add_argument("--dry-run", action="store_true", help="reason but do not apply actions")
+    p.add_argument(
+        "--status",
+        action="store_true",
+        help="print the latest cycle snapshot and exit (runs no cycle)",
+    )
     args = p.parse_args()
+
+    # --status is a read-only inspector: print the last snapshot and exit before
+    # building the model client or running any cycle.
+    if args.status:
+        from .config import Config
+        from . import status
+
+        print(status.render_status(Config()))
+        return
 
     # Apply CLI overrides via env BEFORE building Config (which reads env).
     if args.interval is not None:
