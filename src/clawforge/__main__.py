@@ -4,9 +4,17 @@ from __future__ import annotations
 import argparse
 import os
 
+from . import __version__
+
 
 def main() -> None:
     p = argparse.ArgumentParser(prog="clawforge", description="Autonomous PM Claw Agent")
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="print the clawforge version and exit",
+    )
     p.add_argument("--once", action="store_true", help="run a single cycle and exit")
     p.add_argument("--interval", type=int, help="seconds between cycles")
     p.add_argument("--dry-run", action="store_true", help="reason but do not apply actions")
