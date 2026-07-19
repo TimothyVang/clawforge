@@ -6,6 +6,8 @@ a recovery event (log + retry next cycle) rather than a crash.
 """
 from __future__ import annotations
 
+import json
+import sys
 import time
 from datetime import datetime, timezone
 from typing import Any
@@ -72,7 +74,44 @@ def _log(config: Config, line: str) -> None:
     config.ensure_dirs()
     with open(config.log_path, "a") as f:
         f.write(f"{_ts()} {line}\n")
-    print(f"[clawforge {_ts()}] {line}", flush=True)
+    # In JSON mode, keep stdout pure JSON by routing human logs to stderr.
+    stream = sys.stderr if config.json_output else sys.stdout
+    print(f"[clawforge {_ts()}] {line}", file=stream, flush=True)
+
+
+def _cycle_record(cycle: int, state, decision, result, error=None) -> dict[str, Any]:
+    """Structured, machine-readable summary of one cycle (the JSON snapshot)."""
+    rec: dict[str, Any] = {
+        "cycle": cycle,
+        "timestamp": _ts(),
+        "error": error,
+    }
+    if state:
+        rec["repo"] = state["repo"]
+        rec["work_repo"] = state["work_repo"]
+        rec["counts"] = state["counts"]
+    if decision:
+        rec["standup"] = decision.get("standup", "")
+        rec["untriaged"] = decision.get("untriaged")
+        rec["latency_s"] = decision.get("latency_s")
+        rec["actions"] = decision.get("actions", [])
+    if result:
+        rec["applied"] = result.get("applied", [])
+        rec["dispatched"] = result.get("dispatched", [])
+        rec["done"] = result.get("done", [])
+        rec["ready"] = result.get("ready")
+        rec["discord"] = result.get("status_post")
+    return rec
+
+
+def _write_json_snapshot(config: Config, record: dict[str, Any]) -> None:
+    """Persist the structured cycle record; echo to stdout in --json mode."""
+    config.ensure_dirs()
+    payload = json.dumps(record, indent=2, sort_keys=True)
+    config.json_snapshot_path.write_text(payload + "\n")
+    if config.json_output:
+        # One JSON object per cycle on stdout (JSON Lines when run continuously).
+        print(json.dumps(record, sort_keys=True), flush=True)
 
 
 def _snapshot(config: Config, cycle: int, state, decision, result, error=None) -> None:
@@ -135,6 +174,7 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
             if activity else "no-activity")
         ledger.save()
         _snapshot(config, cycle, state, decision, result)
+        _write_json_snapshot(config, _cycle_record(cycle, state, decision, result))
         _log(config,
              f"cycle {cycle}: untriaged={decision['untriaged']} "
              f"applied={len(result['applied'])} dispatched={len(result['dispatched'])} "
@@ -144,6 +184,7 @@ def run_cycle(client: ModelClient, ledger: Ledger, config: Config = CONFIG) -> b
     except ModelError as exc:
         ledger.save()
         _snapshot(config, cycle, None, None, None, error=str(exc))
+        _write_json_snapshot(config, _cycle_record(cycle, None, None, None, error=str(exc)))
         _log(config, f"cycle {cycle}: MODEL FAILURE (recovering): {exc}")
         return False
     except Exception as exc:  # noqa: BLE001 — never let the heartbeat die

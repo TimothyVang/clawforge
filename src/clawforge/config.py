@@ -57,6 +57,11 @@ class Config:
         self.dry_run = _flag("CLAWFORGE_DRY_RUN")
         self.dispatch_enabled = _flag("CLAWFORGE_DISPATCH")
 
+        # --- output ---
+        # Emit a machine-readable JSON record of each cycle to stdout (human logs
+        # go to stderr). Set by the `--json` CLI flag.
+        self.json_output = _flag("CLAWFORGE_JSON")
+
         # --- discord (optional; skipped if unset) ---
         self.discord_bot_token = os.environ.get("DISCORD_BOT_TOKEN", "")
         self.discord_channel_id = os.environ.get("CLAWFORGE_DISCORD_CHANNEL", "")
@@ -91,6 +96,10 @@ class Config:
     @property
     def snapshot_path(self) -> Path:
         return self.state_dir / "latest-cycle.md"
+
+    @property
+    def json_snapshot_path(self) -> Path:
+        return self.state_dir / "latest-cycle.json"
 
 
 CONFIG = Config()
