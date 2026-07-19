@@ -34,6 +34,34 @@ def issue_url(repo: str, number: int) -> str:
     return f"https://github.com/{repo}/issues/{number}"
 
 
+def list_items(config: Config = CONFIG, repos: set[str] | None = None) -> list[dict[str, Any]]:
+    """Read the live Project board as [{number, repo, title, url, status, labels}].
+
+    Optionally filter to `repos` (owner/name). Returns [] on any failure so a
+    board hiccup never breaks the heartbeat.
+    """
+    try:
+        data = gh("project", "item-list", str(config.project_number), "--owner",
+                  config.owner, "--format", "json", "--limit", "200", json_out=True)
+    except RuntimeError:
+        return []
+    out: list[dict[str, Any]] = []
+    for it in (data.get("items", []) if isinstance(data, dict) else data) or []:
+        c = it.get("content", {}) or {}
+        repo = c.get("repository", "")
+        if repos is not None and repo not in repos:
+            continue
+        out.append({
+            "number": c.get("number"),
+            "repo": repo,
+            "title": it.get("title") or c.get("title", ""),
+            "url": c.get("url", ""),
+            "status": it.get("status") or "No status",
+            "labels": it.get("labels", []),
+        })
+    return out
+
+
 def move(url: str, status_name: str, config: Config = CONFIG) -> str:
     """Add the issue to the board (if absent) and set its Status. Returns a status str."""
     try:
