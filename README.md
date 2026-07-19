@@ -7,7 +7,10 @@ with a self-hosted LLM on an **NVIDIA DGX Spark GB10** — live brain:
 (evidence: the endpoint's `system_fingerprint: vllm-0.24.0`; unauthenticated
 requests get 401) — and acts — triaging issues, writing standups, and
 dispatching a coding step that **opens real PRs**.
-State persists across restarts; model failures recover instead of crashing.
+State survives restarts and `kill -9` (ledger continuity); a dead endpoint or a
+429 storm degrades to a logged recovery cycle; a corrupted ledger recovers to
+fresh state — each proven by reproducible controlled fault injection:
+`bash judging/scripts/self_heal_e2e.sh`.
 
 - **The agent:** [`src/`](src/) (Python) — `python -m clawforge`
 - **The live brain:** DeepSeek-V4-Flash served by **vLLM 0.24** on the Spark,

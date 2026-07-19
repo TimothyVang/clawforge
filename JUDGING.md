@@ -2,7 +2,8 @@
 
 Full event guide: [docs/JUDGING.md](docs/JUDGING.md)  
 **Canonical evidence-first judge prompt:** [judging/PROMPT.md](judging/PROMPT.md)  
-Harness notes: [judging/README.md](judging/README.md)
+Harness notes: [judging/README.md](judging/README.md)  
+Machine harnesses: `bash judging/scripts/judge_local.sh` (smoke) · `bash judging/scripts/self_heal_e2e.sh` (self-healing E2E: 4 fault scenarios × 3 iterations + negative control → `judging/latest/self_heal_result.json`)
 
 **Event:** AITX Community × NVIDIA Claw Agent Hackathon  
 **Source:** https://common-scooter-829.notion.site/AITX-Community-x-NVIDIA-Claw-Agent-Hackathon-39d1e636288e803abcf9e24f6c039bcc  
