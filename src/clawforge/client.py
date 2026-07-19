@@ -25,6 +25,17 @@ class ModelError(RuntimeError):
     """
 
 
+def _retry_after_seconds(header_value: str | None) -> float | None:
+    """Parse a Retry-After header. Supports delta-seconds; ignores HTTP-date."""
+    if not header_value:
+        return None
+    try:
+        secs = float(header_value.strip())
+        return secs if secs >= 0 else None
+    except ValueError:
+        return None  # HTTP-date form: fall back to exponential backoff
+
+
 @dataclass
 class ChatResult:
     content: str
@@ -61,18 +72,34 @@ class ModelClient:
         if response_format is not None:
             payload["response_format"] = response_format
 
+        # On HTTP 429 (rate limited), honor Retry-After when present, else back off
+        # exponentially, and retry up to model_max_retries before giving up. Total
+        # request time (across attempts) is what we measure as latency.
         t0 = time.monotonic()
-        try:
-            resp = requests.post(
-                self._url, json=payload, headers=self._headers,
-                timeout=self.cfg.request_timeout,
-            )
-        except requests.RequestException as exc:
-            raise ModelError(f"endpoint unreachable: {self._url} ({exc})") from exc
+        attempt = 0
+        while True:
+            try:
+                resp = requests.post(
+                    self._url, json=payload, headers=self._headers,
+                    timeout=self.cfg.request_timeout,
+                )
+            except requests.RequestException as exc:
+                raise ModelError(f"endpoint unreachable: {self._url} ({exc})") from exc
+
+            if resp.status_code == 429 and attempt < self.cfg.model_max_retries:
+                backoff = min(
+                    self.cfg.model_retry_base * (2 ** attempt), self.cfg.model_retry_cap
+                )
+                delay = _retry_after_seconds(resp.headers.get("Retry-After")) or backoff
+                time.sleep(delay)
+                attempt += 1
+                continue
+            break
 
         dt = time.monotonic() - t0
         if resp.status_code != 200:
-            raise ModelError(f"model HTTP {resp.status_code}: {resp.text[:300]}")
+            detail = " (rate limited; retries exhausted)" if resp.status_code == 429 else ""
+            raise ModelError(f"model HTTP {resp.status_code}{detail}: {resp.text[:300]}")
 
         try:
             data = resp.json()

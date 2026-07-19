@@ -42,6 +42,11 @@ class Config:
         self.model = os.environ.get("CLAWFORGE_MODEL", "clawforge-brain")
         self.api_key = os.environ.get("CLAWFORGE_MODEL_API_KEY", "EMPTY")
         self.request_timeout = int(os.environ.get("CLAWFORGE_MODEL_TIMEOUT", "90"))
+        # Rate-limit (HTTP 429) handling: back off and retry rather than failing
+        # the cycle. Backoff = base * 2**attempt, capped, plus any Retry-After.
+        self.model_max_retries = int(os.environ.get("CLAWFORGE_MODEL_MAX_RETRIES", "3"))
+        self.model_retry_base = float(os.environ.get("CLAWFORGE_MODEL_RETRY_BASE", "1.0"))
+        self.model_retry_cap = float(os.environ.get("CLAWFORGE_MODEL_RETRY_CAP", "30.0"))
 
         # --- GitHub (tracker of record) ---
         self.owner = os.environ.get("CLAWFORGE_OWNER", "TimothyVang")
