@@ -9,7 +9,9 @@ no OAuth app to manage.
 | Repo | Visibility | What |
 |------|-----------|------|
 | [TimothyVang/clawforge](https://github.com/TimothyVang/clawforge) | Public | Product + `team-ops/` mesh + judging |
-| [TimothyVang/e2e-fixture](https://github.com/TimothyVang/e2e-fixture) | Private | Team fixture app (`TEAM-n` convention) |
+| [9prodhi/Namoclaw-hackathon](https://github.com/9prodhi/Namoclaw-hackathon) | Public | Teammate entry (NemoClaw + ace-research) — clawforge's **watched repo** |
+| [davidbramante/tickytalky](https://github.com/davidbramante/tickytalky) | Public | TikTok AI strategist — clawforge's **work repo** (autonomous PRs land here) |
+| [TimothyVang/e2e-fixture](https://github.com/TimothyVang/e2e-fixture) | Private | Team fixture app (`TEAM-n` convention) — repo currently empty |
 
 > New apps in the sandbox live under `hackathon/projects/<name>/`. Add each one
 > to this table and to the Project board (below) when it gets a repo.
