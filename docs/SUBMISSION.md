@@ -46,8 +46,14 @@ for review — work that happened autonomously overnight.
 - Persistence: ledger at 295+ lifetime heartbeat cycles across many process
   restarts; zero repeated actions. (Most heartbeats are idle-by-design — the model
   is only called when there is untriaged work; idle cycles log `latency=0.0s`.)
-- Failure recovery (controlled fault test, not organic): a deliberately dead
-  endpoint produced `MODEL FAILURE (recovering)` and the next cycle recovered.
+- Failure recovery (controlled fault injection, judge-reproducible — not
+  organic-fault proof): `bash judging/scripts/self_heal_e2e.sh` drives four
+  fault scenarios E2E, 3 iterations each + a negative control + a per-run
+  canary: endpoint death → logged `MODEL FAILURE (recovering)` → recovery;
+  a 429 storm absorbed by backoff without failing the cycle; `kill -9` →
+  ledger cycle-counter continuity with zero duplicate actions; corrupt
+  ledger → fresh-state recovery without a crash. Verdicts + evidence paths:
+  `judging/latest/self_heal_result.json`.
 
 ## Demo runbook (for the Loom — show the loop live)
 ```bash

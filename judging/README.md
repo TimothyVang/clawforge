@@ -17,7 +17,7 @@ Use it by pasting into a fresh agent session or:
 | Path | Purpose |
 |------|---------|
 | `judging/PROMPT.md` | Canonical judge instructions |
-| `judging/scripts/` | Local harness scripts (to be added) |
+| `judging/scripts/` | `judge_local.sh` (smoke checks) · `self_heal_e2e.sh` (self-healing E2E fault injection) · `mock_model_server.py` (fault-transport stub) |
 | `judging/latest/` | Latest generated reports (gitignored) |
 | `judging/runs/<timestamp>/` | Historical evidence (gitignored) |
 
