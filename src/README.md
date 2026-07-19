@@ -1,9 +1,11 @@
 # clawforge — autonomous AI project-manager agent (a "Claw Agent")
 
 A heartbeat-driven agent that runs a software team's GitHub without being prompted.
-Each cycle it **senses** open issues/PRs, **reasons** with a vLLM-served model,
-and **acts** — triaging issues, (optionally) posting a standup, and dispatching
-coding sub-agents. State persists across restarts.
+Each cycle it **senses** open issues/PRs, **reasons** with a self-hosted model
+(any OpenAI-compatible endpoint — today NVIDIA Nemotron-3-Nano-4B via Ollama on a
+DGX Spark; vLLM validated and drop-in), and **acts** — triaging issues,
+(optionally) posting a standup, and dispatching coding sub-agents. State persists
+across restarts.
 
 ## The three Claw pillars (all demonstrated)
 - **Proactively autonomous** — acts (labels/triage) every cycle with no human message.
@@ -20,14 +22,17 @@ loop.py        heartbeat: warmup -> [sense -> decide -> act -> persist] -> sleep
   ledger.py    persistent acted-on store + cycle counter
   discord.py   optional standup post (skipped without a bot token)
 ```
-The **brain** is a vLLM endpoint on a DGX Spark (see `../vllm-test/`). Switching
-models is one env var (`CLAWFORGE_MODEL_BASE_URL`).
+The **brain** is any OpenAI-compatible endpoint — the live setup is NVIDIA
+Nemotron-3-Nano-4B via Ollama on a DGX Spark (tunnel on `127.0.0.1:11434`, see
+`src/.env`); vLLM was validated on the same GB10 (`../vllm-test/`) and drops in.
+Switching models is one env var (`CLAWFORGE_MODEL_BASE_URL`).
 
 ## Quick start
 ```bash
-# 1. Point at the model endpoint (see ../vllm-test to bring it up + tunnel)
-export CLAWFORGE_MODEL_BASE_URL=http://localhost:8001/v1
-export CLAWFORGE_MODEL=clawforge-brain
+# 1. Point at a model endpoint (defaults come from src/.env — the Spark's
+#    Ollama tunnel; any OpenAI-compatible /v1 endpoint works)
+export CLAWFORGE_MODEL_BASE_URL=http://127.0.0.1:11434/v1
+export CLAWFORGE_MODEL=nemotron-claw
 export GITHUB_TOKEN=$(gh auth token)          # GitHub auth for actions
 
 # 2. Run one cycle (safe: --dry-run reasons but applies nothing)

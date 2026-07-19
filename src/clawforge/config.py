@@ -115,5 +115,10 @@ class Config:
     def json_snapshot_path(self) -> Path:
         return self.state_dir / "latest-cycle.json"
 
+    @property
+    def history_path(self) -> Path:
+        """Append-only JSONL of every cycle record (audit trail across cycles)."""
+        return self.state_dir / "cycle-history.jsonl"
+
 
 CONFIG = Config()
